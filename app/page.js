@@ -2,10 +2,14 @@
 import React, { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import Charts from "@/components/Charts";
+import Dashboard from "@/components/Dashboard";
 
 export default function Home() {
+  const predefinedCategories = [
+    "Food", "Transport", "Shopping", "Bills", "Entertainment", "Health",  "Other"
+  ];
   const [transactions, setTransactions] = useState([]);
-  const [form, setForm] = useState({ amount: "", date: "", description: "" });
+  const [form, setForm] = useState({ amount: "", date: "", description: "", category: ""   });
   const [editId, setEditId] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -36,7 +40,7 @@ export default function Home() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.amount || !form.date || !form.description) {
+    if (!form.amount || !form.date || !form.description || !form.category) {
       setError("All fields are required!");
       return;
     }
@@ -55,7 +59,7 @@ export default function Home() {
       const result = await response.json();
       if (result.success) {
         fetchTransactions();
-        setForm({ amount: "", date: "", description: "" });
+        setForm({ amount: "", date: "", description: "" , category: ""});
         setEditId(null);
       } else {
         setError(result.error || "Failed to save transaction.");
@@ -69,7 +73,7 @@ export default function Home() {
     setForm(transaction);
     setEditId(transaction._id);
   };
-
+  
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this transaction?")) return;
     
@@ -113,6 +117,19 @@ export default function Home() {
             <input type="text" name="description" value={form.description} onChange={handleChange} placeholder="Description"
               className="w-full p-2 border rounded focus:ring-2 focus:ring-green-400" />
           </div>
+          <div className="mb-2">
+            <select
+            name="category"
+            value={form.category}
+            onChange={handleChange}
+            className="w-full p-2 border rounded focus:ring-2 focus:ring-green-400"
+            >
+            <option value="">Select Category</option>
+            {predefinedCategories.map((category) => (
+            <option key={category} value={category}>{category}</option>
+            ))}
+            </select>
+            </div>
           <button type="submit" className="bg-green-500 hover:bg-green-600 text-white p-2 rounded w-full md:w-auto">
             {editId ? "Update" : "Add"} Transaction
           </button>
@@ -129,17 +146,20 @@ export default function Home() {
             ) : (
               transactions.map((transaction) => (
                 <li key={transaction._id} className="flex flex-col md:flex-row justify-between p-2 border-b items-center text-center md:text-left">
-                  <span>{transaction.date} - ₹{transaction.amount} - {transaction.description}</span>
+                  <span>{transaction.date} - ₹{transaction.amount} - {transaction.description} ({transaction.category})</span>
                   <div className="mt-2 md:mt-0">
                     <button className="text-blue-500 hover:text-blue-700 mr-2" onClick={() => handleEdit(transaction)}>Edit</button>
                     <button className="text-red-500 hover:text-red-700" onClick={() => handleDelete(transaction._id)}>Delete</button>
                   </div>
                 </li>
               ))
+              
             )}
           </ul>
         )}
       </div>
+      {/* Dashboard Summary Cards */}
+      <Dashboard transactions={transactions} />
       <Charts transactions={transactions} />
     </>
   );
