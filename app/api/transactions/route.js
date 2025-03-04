@@ -21,8 +21,8 @@ export async function GET() {
 
 export async function POST(request) {
   try {
-    const { amount, date, description } = await request.json();
-    if (!amount || !date || !description) {
+    const { amount, date, description , category } = await request.json();
+    if (!amount || !date || !description || !category) {
       return NextResponse.json({ success: false, error: "All fields are required!" });
     }
 
@@ -30,7 +30,7 @@ export async function POST(request) {
     const database = client.db("henil");
     const transactions = database.collection("transactions");
 
-    const result = await transactions.insertOne({ amount, date, description });
+    const result = await transactions.insertOne({ amount, date, description , category });
 
     return NextResponse.json({ success: true, insertedId: result.insertedId });
   } catch (error) {
@@ -42,9 +42,9 @@ export async function POST(request) {
 
 export async function PUT(request) {
   try {
-    const { id, amount, date, description } = await request.json();
+    const { id, amount, date, description, category } = await request.json();
     
-    if (!id || !amount || !date || !description) {
+    if (!id || !amount || !date || !description || !category) {
       return NextResponse.json({ success: false, error: "All fields are required!" });
     }
 
@@ -54,7 +54,7 @@ export async function PUT(request) {
 
     const result = await transactions.updateOne(
       { _id: new ObjectId(id) },
-      { $set: { amount, date, description } }
+      { $set: { amount, date, description , category } }
     );
 
     if (result.modifiedCount === 0) {
