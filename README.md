@@ -1,8 +1,51 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Personal Finance Tracker
+
+This is a personal finance tracker application built with Next.js, React, and MongoDB. It allows users to track their expenses, view monthly expenses in a chart, and manage transactions.
+
+## Features
+
+- Add, edit, and delete transactions
+- View transactions in a list
+- View monthly expenses in a bar chart
+- Responsive design
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js (version 18 or higher)
+- MongoDB Atlas account (or local MongoDB instance)
+
+### Installation
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/your-username/personal_finance_tracker.git
+cd personal_finance_tracker
+```
+
+2. Install dependencies:
+
+```bash
+npm install
+# or
+yarn install
+# or
+pnpm install
+# or
+bun install
+```
+
+3. Create a `.env.local` file in the root directory and add your MongoDB connection string:
+
+```env
+MONGODB_URI=mongodb+srv://<username>:<password>@cluster0.qqhwf.mongodb.net/
+```
+
+### Running the Development Server
+
+Start the development server:
 
 ```bash
 npm run dev
@@ -16,9 +59,19 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `components/Header.jsx`: Header component with navigation links and an "Add Transaction" button.
+- `components/Charts.jsx`: Charts component to display monthly expenses in a bar chart.
+- `app/page.js`: Main page component that handles fetching, adding, editing, and deleting transactions.
+- `app/api/transactions/route.js`: API route for handling CRUD operations with MongoDB.
+
+## API Endpoints
+
+- `GET /api/transactions`: Fetch all transactions.
+- `POST /api/transactions`: Add a new transaction.
+- `PUT /api/transactions`: Update an existing transaction.
+- `DELETE /api/transactions`: Delete a transaction.
 
 ## Learn More
 

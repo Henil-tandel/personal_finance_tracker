@@ -1,101 +1,146 @@
-import Image from "next/image";
+'use client';
+import React, { useState, useEffect } from "react";
+import Header from "@/components/Header";
+import Charts from "@/components/Charts";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.js
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [transactions, setTransactions] = useState([]);
+  const [form, setForm] = useState({ amount: "", date: "", description: "" });
+  const [editId, setEditId] = useState(null);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+  useEffect(() => {
+    fetchTransactions();
+  }, []);
+
+  const fetchTransactions = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch("/api/transactions");
+      const result = await response.json();
+      if (result.success) {
+        setTransactions(result.data);
+      } else {
+        setError(result.error || "Failed to fetch transactions.");
+      }
+    } catch {
+      setError("Network error. Please try again.");
+    }
+    setLoading(false);
+  };
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!form.amount || !form.date || !form.description) {
+      setError("All fields are required!");
+      return;
+    }
+    setError("");
+
+    const method = editId ? "PUT" : "POST";
+    const body = editId ? { id: editId, ...form } : form;
+
+    try {
+      const response = await fetch("/api/transactions", {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        fetchTransactions();
+        setForm({ amount: "", date: "", description: "" });
+        setEditId(null);
+      } else {
+        setError(result.error || "Failed to save transaction.");
+      }
+    } catch {
+      setError("Something went wrong. Please try again.");
+    }
+  };
+
+  const handleEdit = (transaction) => {
+    setForm(transaction);
+    setEditId(transaction._id);
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this transaction?")) return;
+    
+    try {
+      const response = await fetch(`/api/transactions?id=${id}`, { method: "DELETE" });
+      const result = await response.json();
+
+      if (result.success) {
+        fetchTransactions();
+      } else {
+        setError(result.error || "Failed to delete transaction.");
+      }
+    } catch {
+      setError("Could not delete. Try again.");
+    }
+  };
+
+  return (
+    <>
+      <Header />
+      <div className="container mx-auto p-6 max-w-xl md:max-w-3xl lg:max-w-5xl">
+
+        {/* Error Message */}
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mb-4">
+            {error}
+          </div>
+        )}
+
+        {/* Transaction Form */}
+        <form className="mb-4 bg-gray-100 p-4 rounded" onSubmit={handleSubmit}>
+          <div className="mb-2">
+            <input type="number" name="amount" value={form.amount} onChange={handleChange} placeholder="Amount"
+              className="w-full p-2 border rounded focus:ring-2 focus:ring-green-400" />
+          </div>
+          <div className="mb-2">
+            <input type="date" name="date" value={form.date} onChange={handleChange}
+              className="w-full p-2 border rounded focus:ring-2 focus:ring-green-400" />
+          </div>
+          <div className="mb-2">
+            <input type="text" name="description" value={form.description} onChange={handleChange} placeholder="Description"
+              className="w-full p-2 border rounded focus:ring-2 focus:ring-green-400" />
+          </div>
+          <button type="submit" className="bg-green-500 hover:bg-green-600 text-white p-2 rounded w-full md:w-auto">
+            {editId ? "Update" : "Add"} Transaction
+          </button>
+        </form>
+
+        {/* Loading State */}
+        {loading && <p className="text-gray-500 text-center">Loading transactions...</p>}
+
+        {/* Transactions List */}
+        {!loading && (
+          <ul className="bg-white p-4 rounded shadow-md">
+            {transactions.length === 0 ? (
+              <p className="text-gray-500 text-center">No transactions found.</p>
+            ) : (
+              transactions.map((transaction) => (
+                <li key={transaction._id} className="flex flex-col md:flex-row justify-between p-2 border-b items-center text-center md:text-left">
+                  <span>{transaction.date} - ₹{transaction.amount} - {transaction.description}</span>
+                  <div className="mt-2 md:mt-0">
+                    <button className="text-blue-500 hover:text-blue-700 mr-2" onClick={() => handleEdit(transaction)}>Edit</button>
+                    <button className="text-red-500 hover:text-red-700" onClick={() => handleDelete(transaction._id)}>Delete</button>
+                  </div>
+                </li>
+              ))
+            )}
+          </ul>
+        )}
+      </div>
+      <Charts transactions={transactions} />
+    </>
   );
 }
