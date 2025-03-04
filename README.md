@@ -7,6 +7,7 @@ This is a personal finance tracker application built with Next.js, React, and Mo
 - Add, edit, and delete transactions
 - View transactions in a list
 - View monthly expenses in a bar chart
+- View category-wise expenses in a pie chart
 - Responsive design
 
 ## Getting Started
@@ -62,7 +63,8 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 ## Project Structure
 
 - `components/Header.jsx`: Header component with navigation links and an "Add Transaction" button.
-- `components/Charts.jsx`: Charts component to display monthly expenses in a bar chart.
+- `components/Charts.jsx`: Charts component to display monthly and category-wise expenses.
+- `components/Dashboard.jsx`: Dashboard component to display total expenses, category breakdown, and recent transactions.
 - `app/page.js`: Main page component that handles fetching, adding, editing, and deleting transactions.
 - `app/api/transactions/route.js`: API route for handling CRUD operations with MongoDB.
 
